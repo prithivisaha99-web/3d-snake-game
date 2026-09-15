@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>SNAKE 3D — Neon Arcade Garden</title>
     <link rel="stylesheet" href="welcome.css">
     <!-- Three.js CDN -->
@@ -49,11 +49,19 @@
 
         <!-- Center Hero Content -->
         <main class="hero-content">
-            <p class="title-tagline">ARCADE EVOLUTION</p>
+            <p class="title-tagline">3D ARCADE EVOLUTION</p>
             <h1 class="game-title">SNAKE GAME</h1>
             <p class="subtitle">
-                Enter the world of the <strong>Neon Serpent</strong>. Slither through a glowing 3D futuristic garden, devour cyber-orbs, and dominate the leaderboard!
+                Enter the <strong>Neon Garden</strong>. Slither through glowing 3D worlds, collect power-ups, defeat obstacles, and dominate the leaderboard!
             </p>
+
+            <!-- Active Configuration Chips -->
+            <div class="active-config-bar">
+                <div class="config-chip" id="chip-mode">🎮 Mode: <strong>Classic</strong></div>
+                <div class="config-chip" id="chip-diff">⚡ Difficulty: <strong>Normal</strong></div>
+                <div class="config-chip" id="chip-skin">🐍 Skin: <strong>Emerald</strong></div>
+                <div class="config-chip" id="chip-world">🌍 World: <strong>Neon Garden</strong></div>
+            </div>
 
             <div class="cta-group">
                 <a href="game.html" class="btn-start-game" id="start-game-btn">
@@ -61,75 +69,59 @@
                     <div class="btn-pulse-ring"></div>
                 </a>
             </div>
+
+            <!-- Hub Feature Menu Buttons -->
+            <div class="hub-menu-grid">
+                <button class="hub-btn" id="btn-hub-modes">
+                    <span class="hub-btn-icon">🎮</span>
+                    <span>Modes</span>
+                </button>
+                <button class="hub-btn" id="btn-hub-diff">
+                    <span class="hub-btn-icon">⚡</span>
+                    <span>Difficulty</span>
+                </button>
+                <button class="hub-btn" id="btn-hub-skins">
+                    <span class="hub-btn-icon">🐍</span>
+                    <span>Skins</span>
+                </button>
+                <button class="hub-btn" id="btn-hub-worlds">
+                    <span class="hub-btn-icon">🌍</span>
+                    <span>Worlds</span>
+                </button>
+                <button class="hub-btn" id="btn-hub-daily">
+                    <span class="hub-btn-icon">📅</span>
+                    <span>Daily</span>
+                </button>
+                <button class="hub-btn" id="btn-hub-achievements">
+                    <span class="hub-btn-icon">🏆</span>
+                    <span>Awards</span>
+                </button>
+                <button class="hub-btn" id="btn-hub-stats">
+                    <span class="hub-btn-icon">📊</span>
+                    <span>Stats</span>
+                </button>
+                <button class="hub-btn" id="btn-hub-howto">
+                    <span class="hub-btn-icon">❓</span>
+                    <span>Rules</span>
+                </button>
+            </div>
         </main>
-
-        <!-- Feature Badges -->
-        <footer class="features-grid">
-            <div class="feature-card">
-                <span class="feature-icon">🎮</span>
-                <div>
-                    <div class="feature-title">Classic Precision</div>
-                    <div class="feature-desc">Arrow & WASD controls</div>
-                </div>
-            </div>
-
-            <div class="feature-card">
-                <span class="feature-icon">✨</span>
-                <div>
-                    <div class="feature-title">3D Neon Garden</div>
-                    <div class="feature-desc">Dynamic lighting & FX</div>
-                </div>
-            </div>
-
-            <div class="feature-card">
-                <span class="feature-icon">⚡</span>
-                <div>
-                    <div class="feature-title">Synth Audio</div>
-                    <div class="feature-desc">Dynamic arcade audio FX</div>
-                </div>
-            </div>
-
-            <div class="feature-card">
-                <span class="feature-icon">🏆</span>
-                <div>
-                    <div class="feature-title">Saved Highscore</div>
-                    <div class="feature-desc">Local record persistence</div>
-                </div>
-            </div>
-        </footer>
     </div>
 
-    <!-- How To Play Modal -->
-    <div class="modal-backdrop" id="info-modal">
+    <!-- Generic Hub Modal Dialog -->
+    <div class="modal-backdrop" id="hub-modal">
         <div class="modal-card">
             <div class="modal-header">
-                <h2 class="modal-title">HOW TO PLAY</h2>
+                <h2 class="modal-title" id="modal-title">TITLE</h2>
                 <button class="modal-close" id="modal-close" aria-label="Close">&times;</button>
             </div>
-            <div class="modal-body">
-                <ul>
-                    <li>
-                        <span>🧭</span>
-                        <div><strong>Movement:</strong> Use <strong>Arrow Keys</strong> or <strong>W, A, S, D</strong> (or touch D-pad on mobile) to steer.</div>
-                    </li>
-                    <li>
-                        <span>💎</span>
-                        <div><strong>Collect Food:</strong> Devour glowing cyber-orbs to grow your length and gain <strong>+10 points</strong> each.</div>
-                    </li>
-                    <li>
-                        <span>⚠️</span>
-                        <div><strong>Avoid Collisions:</strong> Do not hit the arena boundary walls or bite your own tail!</div>
-                    </li>
-                    <li>
-                        <span>⏸️</span>
-                        <div><strong>Pause Game:</strong> Press <strong>Spacebar</strong> or the pause button anytime.</div>
-                    </li>
-                </ul>
-            </div>
+            <div id="modal-content"></div>
         </div>
     </div>
 
     <!-- Scripts -->
+    <script src="storage.js"></script>
+    <script src="game-state.js"></script>
     <script src="audio.js"></script>
     <script src="welcome.js"></script>
 </body>
