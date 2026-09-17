@@ -147,10 +147,10 @@ function initThree() {
     clock = new THREE.Clock();
 
     // Lighting
-    const ambientLight = new THREE.AmbientLight(0x3b0764, isMobile ? 2.2 : 1.8);
+    const ambientLight = new THREE.AmbientLight(0x280e45, isMobile ? 1.6 : 1.4);
     scene.add(ambientLight);
 
-    const dirLight = new THREE.DirectionalLight(0x00ff88, isMobile ? 1.5 : 1.4);
+    const dirLight = new THREE.DirectionalLight(0x00ff88, isMobile ? 1.2 : 1.1);
     dirLight.position.set(15, 30, 20);
     
     if (!isMobile) {
@@ -167,15 +167,15 @@ function initThree() {
     scene.add(dirLight);
 
     if (!isMobile) {
-        const purpleLight = new THREE.PointLight(0xa855f7, 3.5, 45);
+        const purpleLight = new THREE.PointLight(0xa855f7, 2.5, 45);
         purpleLight.position.set(-15, 12, 10);
         scene.add(purpleLight);
 
-        const cyanLight = new THREE.PointLight(0x06b6d4, 2.5, 40);
+        const cyanLight = new THREE.PointLight(0x06b6d4, 2.0, 40);
         cyanLight.position.set(15, 12, -10);
         scene.add(cyanLight);
     } else {
-        const centerLight = new THREE.PointLight(0xa855f7, 2.8, 35);
+        const centerLight = new THREE.PointLight(0xa855f7, 2.0, 35);
         centerLight.position.set(0, 10, 0);
         scene.add(centerLight);
     }
@@ -238,9 +238,9 @@ function build3DArena() {
     // Reflective Floor Plane
     const floorGeo = new THREE.PlaneGeometry(arenaWidth, arenaHeight);
     const floorMat = new THREE.MeshStandardMaterial({
-        color: 0x0b071a,
-        roughness: isMobile ? 0.4 : 0.25,
-        metalness: isMobile ? 0.6 : 0.85
+        color: 0x080514,
+        roughness: isMobile ? 0.5 : 0.35,
+        metalness: isMobile ? 0.4 : 0.6
     });
     const floorMesh = new THREE.Mesh(floorGeo, floorMat);
     floorMesh.rotation.x = -Math.PI / 2;
@@ -249,11 +249,11 @@ function build3DArena() {
 
     // Neon Perimeter Fence / Borders
     const wallMat = new THREE.MeshStandardMaterial({
-        color: 0xa855f7,
-        emissive: 0xa855f7,
-        emissiveIntensity: 0.8,
-        roughness: 0.2,
-        metalness: 0.9
+        color: 0x7c3aed,
+        emissive: 0x6d28d9,
+        emissiveIntensity: 0.5,
+        roughness: 0.3,
+        metalness: 0.7
     });
 
     const wallHeight = 0.8;
@@ -285,7 +285,7 @@ function build3DArena() {
     const pylonMat = new THREE.MeshStandardMaterial({
         color: 0x00ff88,
         emissive: 0x00ff88,
-        emissiveIntensity: 1.2
+        emissiveIntensity: 0.7
     });
 
     const corners = [
@@ -301,7 +301,7 @@ function build3DArena() {
         arenaGroup.add(pylon);
 
         if (!isMobile) {
-            const pylonLight = new THREE.PointLight(0x00ff88, 1.5, 8);
+            const pylonLight = new THREE.PointLight(0x00ff88, 1.2, 8);
             pylonLight.position.set(cx, 2, cz);
             arenaGroup.add(pylonLight);
         }
@@ -342,7 +342,7 @@ function buildSporeParticles() {
         size: isMobile ? 0.28 : 0.22,
         vertexColors: true,
         transparent: true,
-        opacity: 0.65,
+        opacity: 0.35,
         blending: THREE.AdditiveBlending
     });
 
@@ -367,31 +367,36 @@ function update3DFood() {
     if (!foodGroup) {
         foodGroup = new THREE.Group();
 
-        // Glowing 3D Crystal
-        const coreGeo = new THREE.OctahedronGeometry(CELL_SIZE * 0.4, 0);
+        // High-Vibrancy Glowing 3D Crystal Core (Ruby Neon)
+        const coreGeo = new THREE.OctahedronGeometry(CELL_SIZE * 0.44, 0);
         const coreMat = new THREE.MeshStandardMaterial({
-            color: 0xf43f5e,
-            emissive: 0xf43f5e,
-            emissiveIntensity: 0.9,
-            roughness: 0.1,
-            metalness: 0.8
+            color: 0xff0055,
+            emissive: 0xff0055,
+            emissiveIntensity: isMobile ? 1.35 : 1.15,
+            roughness: 0.15,
+            metalness: 0.10
         });
         foodCore = new THREE.Mesh(coreGeo, coreMat);
+        if (!isMobile) foodCore.castShadow = true;
         foodGroup.add(foodCore);
 
-        // Orbiting Ring
+        // High-Contrast Chromatic Orbiting Beacon Ring
         const torusTubular = isMobile ? 8 : 16;
         const torusRadial = isMobile ? 16 : 32;
-        const ringGeo = new THREE.TorusGeometry(CELL_SIZE * 0.55, 0.06, torusTubular, torusRadial);
-        const ringMat = new THREE.MeshBasicMaterial({ color: 0xa855f7, transparent: true, opacity: 0.85 });
+        const ringGeo = new THREE.TorusGeometry(CELL_SIZE * 0.58, 0.07, torusTubular, torusRadial);
+        const ringMat = new THREE.MeshBasicMaterial({
+            color: 0x00ffff,
+            transparent: true,
+            opacity: 0.92
+        });
         foodRing = new THREE.Mesh(ringGeo, ringMat);
         foodRing.rotation.x = Math.PI / 3;
         foodGroup.add(foodRing);
 
-        if (!isMobile) {
-            foodLight = new THREE.PointLight(0xf43f5e, 2.5, 10);
-            foodGroup.add(foodLight);
-        }
+        // Vibrant Local Point Light under Food (Mobile & Desktop)
+        foodLight = new THREE.PointLight(0xff0055, isMobile ? 3.0 : 2.5, 12);
+        foodLight.position.set(0, 0.4, 0);
+        foodGroup.add(foodLight);
 
         scene.add(foodGroup);
     }
@@ -491,43 +496,55 @@ function update3DSnake() {
         let mesh;
         if (isHead) {
             const headGroup = new THREE.Group();
-            const headGeo = new THREE.BoxGeometry(CELL_SIZE * 0.88, CELL_SIZE * 0.8, CELL_SIZE * 0.88);
+            const headGeo = new THREE.BoxGeometry(CELL_SIZE * 0.90, CELL_SIZE * 0.82, CELL_SIZE * 0.90);
             const headMat = new THREE.MeshStandardMaterial({
                 color: skinData.headColor,
                 emissive: skinData.headColor,
-                emissiveIntensity: isMobile ? 0.85 : 0.70,
-                roughness: 0.3,
-                metalness: 0.12
+                emissiveIntensity: isMobile ? 1.05 : 0.88,
+                roughness: 0.25,
+                metalness: 0.10
             });
             const headBox = new THREE.Mesh(headGeo, headMat);
             if (!isMobile) headBox.castShadow = true;
             headGroup.add(headBox);
 
-            // Glowing Eyes
+            // Sleek Neon Visor / Brow Plate Accent
+            const visorGeo = new THREE.BoxGeometry(CELL_SIZE * 0.76, CELL_SIZE * 0.16, CELL_SIZE * 0.35);
+            const visorMat = new THREE.MeshBasicMaterial({
+                color: skinData.eyeColor || 0xff0055,
+                transparent: true,
+                opacity: 0.95
+            });
+            const visorMesh = new THREE.Mesh(visorGeo, visorMat);
+            visorMesh.position.set(0, 0.30, 0.32);
+            headGroup.add(visorMesh);
+
+            // Glowing Diamond Eyes
             const eyeSegments = isMobile ? 8 : 16;
-            const eyeGeo = new THREE.SphereGeometry(0.16, eyeSegments, eyeSegments);
-            const eyeMat = new THREE.MeshBasicMaterial({ color: skinData.eyeColor || 0xff0055 });
+            const eyeGeo = new THREE.SphereGeometry(0.17, eyeSegments, eyeSegments);
+            const eyeMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
             
             const leftEye = new THREE.Mesh(eyeGeo, eyeMat);
-            leftEye.position.set(0.3, 0.2, 0.4);
+            leftEye.position.set(0.28, 0.22, 0.44);
             headGroup.add(leftEye);
 
             const rightEye = new THREE.Mesh(eyeGeo, eyeMat);
-            rightEye.position.set(-0.3, 0.2, 0.4);
+            rightEye.position.set(-0.28, 0.22, 0.44);
             headGroup.add(rightEye);
 
             const headLight = new THREE.PointLight(
                 skinData.glow || skinData.headColor,
-                isMobile ? 2.5 : 2.0,
-                isMobile ? 8 : 10
+                isMobile ? 3.0 : 2.4,
+                12
             );
-            headLight.position.set(0, 0.5, 0);
+            headLight.position.set(0, 0.6, 0);
             headGroup.add(headLight);
 
             mesh = headGroup;
         } else {
             const ratio = idx / Math.max(snake.length, 10);
-            const segGeo = new THREE.BoxGeometry(CELL_SIZE * 0.8, CELL_SIZE * 0.72, CELL_SIZE * 0.8);
+            // Segments sized to create crisp clean separation between blocks
+            const segGeo = new THREE.BoxGeometry(CELL_SIZE * 0.78, CELL_SIZE * 0.70, CELL_SIZE * 0.78);
             
             let segColor;
             if (skinData.isRainbow) {
@@ -544,9 +561,9 @@ function update3DSnake() {
             const segMat = new THREE.MeshStandardMaterial({
                 color: segColor,
                 emissive: segColor,
-                emissiveIntensity: isMobile ? (0.55 * (1 - ratio * 0.35)) : (0.40 * (1 - ratio * 0.35)),
-                roughness: 0.35,
-                metalness: 0.15
+                emissiveIntensity: isMobile ? (0.65 * (1 - ratio * 0.35)) : (0.48 * (1 - ratio * 0.35)),
+                roughness: 0.32,
+                metalness: 0.12
             });
             mesh = new THREE.Mesh(segGeo, segMat);
             if (!isMobile) mesh.castShadow = true;
@@ -597,15 +614,25 @@ function animate3D() {
     const delta = clock.getDelta();
     const elapsedTime = clock.getElapsedTime();
 
-    // Food floating & rotation animation
+    // Food floating, pulsing & rotation animation
     if (foodGroup) {
         foodGroup.position.y = 0.8 + Math.sin(elapsedTime * 3) * 0.25;
         if (foodCore) {
             foodCore.rotation.x += 0.025;
             foodCore.rotation.y += 0.035;
+            // Subtle rhythmic breathing scale pulse
+            const pulse = 1.0 + Math.sin(elapsedTime * 4.5) * 0.12;
+            foodCore.scale.set(pulse, pulse, pulse);
+            if (foodCore.material) {
+                foodCore.material.emissiveIntensity = (isMobile ? 1.35 : 1.15) + Math.sin(elapsedTime * 4.5) * 0.35;
+            }
         }
         if (foodRing) {
             foodRing.rotation.z += 0.04;
+            foodRing.rotation.x += 0.015;
+        }
+        if (foodLight) {
+            foodLight.intensity = (isMobile ? 3.0 : 2.5) + Math.sin(elapsedTime * 4.5) * 0.7;
         }
     }
 

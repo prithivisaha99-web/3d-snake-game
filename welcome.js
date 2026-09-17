@@ -122,15 +122,15 @@ function createPatrollingSnake() {
     const headMat = new THREE.MeshStandardMaterial({
         color: skinData.headColor,
         emissive: skinData.headColor,
-        emissiveIntensity: 0.4,
-        roughness: 0.2,
-        metalness: 0.8
+        emissiveIntensity: isMobile ? 0.95 : 0.8,
+        roughness: 0.25,
+        metalness: 0.12
     });
     const head = new THREE.Mesh(headGeo, headMat);
 
     const eyeSegments = isMobile ? 8 : 16;
     const eyeGeo = new THREE.SphereGeometry(0.16, eyeSegments, eyeSegments);
-    const eyeMat = new THREE.MeshBasicMaterial({ color: skinData.eyeColor });
+    const eyeMat = new THREE.MeshBasicMaterial({ color: skinData.eyeColor || 0xff0055 });
     
     const leftEye = new THREE.Mesh(eyeGeo, eyeMat);
     leftEye.position.set(0.35, 0.25, 0.5);
@@ -140,10 +140,8 @@ function createPatrollingSnake() {
     rightEye.position.set(-0.35, 0.25, 0.5);
     head.add(rightEye);
 
-    if (!isMobile) {
-        const headLight = new THREE.PointLight(skinData.glow, 2, 12);
-        head.add(headLight);
-    }
+    const headLight = new THREE.PointLight(skinData.glow || skinData.headColor, isMobile ? 2.5 : 2.0, 12);
+    head.add(headLight);
 
     scene.add(head);
     snakeSegments.push(head);
@@ -166,9 +164,9 @@ function createPatrollingSnake() {
         const bodyMat = new THREE.MeshStandardMaterial({
             color: color,
             emissive: color,
-            emissiveIntensity: 0.25 * (1 - ratio * 0.5),
-            roughness: 0.3,
-            metalness: 0.7
+            emissiveIntensity: isMobile ? (0.60 * (1 - ratio * 0.4)) : (0.45 * (1 - ratio * 0.4)),
+            roughness: 0.32,
+            metalness: 0.15
         });
         const seg = new THREE.Mesh(bodyGeo, bodyMat);
         const scale = 1 - (ratio * 0.45);
@@ -180,10 +178,10 @@ function createPatrollingSnake() {
 
 function createFloatingFood() {
     const foods = isMobile ? [
-        { pos: [-6, 2, 2], color: 0xf43f5e, ringColor: 0xa855f7 },
+        { pos: [-6, 2, 2], color: 0xff0055, ringColor: 0x00ffff },
         { pos: [6, -1, 3], color: 0xa3e635, ringColor: 0xec4899 }
     ] : [
-        { pos: [-7, 2, 2], color: 0xf43f5e, ringColor: 0xa855f7 },
+        { pos: [-7, 2, 2], color: 0xff0055, ringColor: 0x00ffff },
         { pos: [8, -1, 4], color: 0x38bdf8, ringColor: 0x00ff88 },
         { pos: [0, 4, -3], color: 0xa3e635, ringColor: 0xec4899 }
     ];
@@ -199,23 +197,21 @@ function createFloatingFood() {
         const coreMat = new THREE.MeshStandardMaterial({
             color: f.color,
             emissive: f.color,
-            emissiveIntensity: 0.8,
-            roughness: 0.1,
-            metalness: 0.9
+            emissiveIntensity: isMobile ? 1.25 : 1.1,
+            roughness: 0.15,
+            metalness: 0.10
         });
         const core = new THREE.Mesh(coreGeo, coreMat);
         group.add(core);
 
-        const ringGeo = new THREE.TorusGeometry(1.0, 0.04, torusTubular, torusRadial);
-        const ringMat = new THREE.MeshBasicMaterial({ color: f.ringColor, transparent: true, opacity: 0.75 });
+        const ringGeo = new THREE.TorusGeometry(1.0, 0.05, torusTubular, torusRadial);
+        const ringMat = new THREE.MeshBasicMaterial({ color: f.ringColor, transparent: true, opacity: 0.85 });
         const ring = new THREE.Mesh(ringGeo, ringMat);
         ring.rotation.x = Math.PI / 3;
         group.add(ring);
 
-        if (!isMobile) {
-            const light = new THREE.PointLight(f.color, 1.5, 10);
-            group.add(light);
-        }
+        const light = new THREE.PointLight(f.color, isMobile ? 2.5 : 2.0, 10);
+        group.add(light);
 
         scene.add(group);
         foodItems.push({ group, core, ring, basePos: f.pos });
