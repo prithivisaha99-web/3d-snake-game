@@ -55,6 +55,7 @@ const _tempTargetVec = new THREE.Vector3();
 
 // DOM ELEMENTS
 let scoreEl, highScoreEl, timeEl, speedEl;
+let lengthEl, finalLengthEl, finalTimeEl;
 let gameOverModal, gameOverReasonEl, finalScoreEl, bestScoreEl, newRecordBadge;
 let pauseModal, restartBtn, playAgainBtn, pauseToggleBtn, soundToggleBtn, soundIcon;
 let dpadUp, dpadDown, dpadLeft, dpadRight;
@@ -661,6 +662,7 @@ function resetRound() {
     if (scoreEl) scoreEl.innerText = score;
     if (timeEl) timeEl.innerText = formatTime(seconds);
     if (speedEl) speedEl.innerText = '1.0x';
+    if (lengthEl) lengthEl.innerText = snake.length;
 
     generateFood();
     update3DSnake();
@@ -766,6 +768,7 @@ function moveSnake() {
     }
 
     update3DSnake();
+    if (lengthEl) lengthEl.innerText = snake.length;
 }
 
 function updateScore() {
@@ -867,6 +870,8 @@ function gameOver(reason) {
     if (gameOverReasonEl) gameOverReasonEl.innerText = reason;
     if (finalScoreEl) finalScoreEl.innerText = score;
     if (bestScoreEl) bestScoreEl.innerText = highScore;
+    if (finalLengthEl) finalLengthEl.innerText = snake.length;
+    if (finalTimeEl) finalTimeEl.innerText = formatTime(seconds);
 
     if (newRecordBadge) {
         if (isNewHighScore && score > 0) newRecordBadge.style.display = 'inline-block';
@@ -895,6 +900,7 @@ document.addEventListener('DOMContentLoaded', () => {
     scoreEl = document.getElementById('score-val');
     highScoreEl = document.getElementById('highscore-val');
     timeEl = document.getElementById('time-val');
+    lengthEl = document.getElementById('length-val');
     speedEl = document.getElementById('speed-val');
     popupsContainer = document.getElementById('floating-popups');
 
@@ -902,6 +908,8 @@ document.addEventListener('DOMContentLoaded', () => {
     gameOverReasonEl = document.getElementById('game-over-reason');
     finalScoreEl = document.getElementById('final-score');
     bestScoreEl = document.getElementById('best-score');
+    finalLengthEl = document.getElementById('stat-final-length');
+    finalTimeEl = document.getElementById('stat-final-time');
     newRecordBadge = document.getElementById('new-record-badge');
     pauseModal = document.getElementById('pause-modal');
 
