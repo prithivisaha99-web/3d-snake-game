@@ -1,4 +1,4 @@
-﻿@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@600;800;900&family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@600;800;900&family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap');
 
 :root {
     --bg-dark: #07050f;
@@ -605,25 +605,99 @@ html, body {
 /* Mobile Responsive Adjustments */
 @media (max-width: 768px) {
     .ui-container {
-        padding: 1rem 0.75rem;
+        padding: calc(0.75rem + env(safe-area-inset-top, 0px)) calc(0.6rem + env(safe-area-inset-right, 0px)) calc(0.75rem + env(safe-area-inset-bottom, 0px)) calc(0.6rem + env(safe-area-inset-left, 0px));
+    }
+    .top-nav {
+        gap: 0.35rem;
+    }
+    .brand-badge {
+        padding: 0.35rem 0.75rem;
+        gap: 0.45rem;
+    }
+    .brand-text {
+        font-size: 0.72rem;
+        letter-spacing: 1px;
+    }
+    .high-score-badge {
+        font-size: 0.72rem;
+        padding: 0.35rem 0.65rem;
+    }
+    .icon-btn {
+        width: 38px;
+        height: 38px;
+        min-width: 38px;
+        min-height: 38px;
     }
     .game-title {
-        font-size: clamp(2.2rem, 9vw, 3.2rem);
+        font-size: clamp(2rem, 8.5vw, 3rem);
+    }
+    .subtitle {
+        font-size: 0.85rem;
+        margin-bottom: 0.85rem;
+        padding: 0 0.5rem;
+    }
+    .active-config-bar {
+        gap: 0.35rem;
+        margin-bottom: 1.1rem;
+    }
+    .config-chip {
+        font-size: 0.7rem;
+        padding: 0.3rem 0.65rem;
+    }
+    .btn-start-game {
+        padding: 0.95rem 2.4rem;
+        font-size: 1.15rem;
+        letter-spacing: 2px;
     }
     .hub-menu-grid {
-        gap: 0.5rem;
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 0.4rem;
+        width: 100%;
+        max-width: 480px;
+        margin-top: 0.75rem;
     }
     .hub-btn {
-        padding: 0.5rem 0.8rem;
-        font-size: 0.75rem;
+        flex-direction: column;
+        justify-content: center;
+        padding: 0.5rem 0.25rem;
+        font-size: 0.68rem;
+        gap: 0.25rem;
+        min-height: 48px;
+        border-radius: 12px;
+    }
+    .hub-btn-icon {
+        font-size: 1.15rem;
     }
     .selection-grid {
         grid-template-columns: 1fr;
+        gap: 0.6rem;
     }
     .stats-grid {
         grid-template-columns: 1fr;
+        gap: 0.6rem;
     }
     .modal-card {
-        padding: 1.25rem;
+        padding: 1.25rem 1rem;
+        max-height: 85dvh;
+        max-height: 85vh;
+        border-radius: 18px;
+    }
+}
+
+@media (max-width: 360px) {
+    .brand-text {
+        display: none;
+    }
+    .game-title {
+        font-size: 1.85rem;
+    }
+    .btn-start-game {
+        padding: 0.85rem 1.8rem;
+        font-size: 1.05rem;
+    }
+    .hub-btn {
+        font-size: 0.62rem;
+        padding: 0.4rem 0.15rem;
     }
 }

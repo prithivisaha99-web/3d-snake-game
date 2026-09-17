@@ -1,4 +1,4 @@
-﻿// 3D Welcome Landing Page - Three.js Neon Garden & Serpent (Hub System)
+// 3D Welcome Landing Page - Three.js Neon Garden & Serpent (Hub System)
 
 const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || 
                  (window.innerWidth <= 768 && ('ontouchstart' in window || navigator.maxTouchPoints > 0));
@@ -353,7 +353,7 @@ function animate() {
 // ----------------------------------------------------
 // UI, MODALS & PROGRESSION HUB
 // ----------------------------------------------------
-document.addEventListener('DOMContentLoaded', () => {
+function initWelcomeUI() {
     init3D();
 
     function updateHubChips() {
@@ -378,6 +378,26 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     updateHubChips();
 
+    // Fast Touch Helper
+    function bindFastClick(element, handler) {
+        if (!element) return;
+        let lastTouchTime = 0;
+        element.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            lastTouchTime = Date.now();
+            handler(e);
+        }, { passive: false });
+        element.addEventListener('click', (e) => {
+            if (Date.now() - lastTouchTime < 450) {
+                e.preventDefault();
+                return;
+            }
+            e.preventDefault();
+            handler(e);
+        });
+    }
+
     // Sound UI
     const soundToggle = document.getElementById('sound-toggle');
     const soundIcon = document.getElementById('sound-icon');
@@ -393,8 +413,7 @@ document.addEventListener('DOMContentLoaded', () => {
     updateSoundUI();
 
     if (soundToggle) {
-        soundToggle.addEventListener('click', (e) => {
-            e.preventDefault();
+        bindFastClick(soundToggle, () => {
             sounds.toggleMute();
             updateSoundUI();
             sounds.playClick();
@@ -420,7 +439,7 @@ document.addEventListener('DOMContentLoaded', () => {
         updateHubChips();
     }
 
-    if (modalClose) modalClose.addEventListener('click', closeModal);
+    if (modalClose) bindFastClick(modalClose, closeModal);
     if (modalBackdrop) {
         modalBackdrop.addEventListener('click', (e) => {
             if (e.target === modalBackdrop) closeModal();
@@ -447,9 +466,9 @@ document.addEventListener('DOMContentLoaded', () => {
         openModal('🎮 SELECT GAME MODE', html);
 
         modalBody.querySelectorAll('.select-card').forEach(card => {
-            card.addEventListener('click', () => {
-                const mode = card.getAttribute('data-mode');
-                storage.saveSettings({ mode });
+            bindFastClick(card, () => {
+                const modeId = card.getAttribute('data-mode');
+                storage.saveSettings({ mode: modeId });
                 closeModal();
             });
         });
@@ -464,20 +483,20 @@ document.addEventListener('DOMContentLoaded', () => {
             html += `
                 <div class="select-card ${isActive}" data-diff="${d.id}">
                     <div class="select-card-header">
-                        <span class="select-card-title">⚡ ${d.name}</span>
-                        ${isActive ? '<span style="color: #00ff88; font-size: 0.8rem;">● ACTIVE</span>' : ''}
+                        <span class="select-card-title">${d.name} (${d.speedMult}x)</span>
+                        ${isActive ? '<span style="color: #00ff88; font-size: 0.8rem;">● SELECTED</span>' : ''}
                     </div>
                     <p class="select-card-desc">${d.desc}</p>
                 </div>
             `;
         });
         html += '</div>';
-        openModal('⚡ SELECT DIFFICULTY', html);
+        openModal('⚡ GAME DIFFICULTY', html);
 
         modalBody.querySelectorAll('.select-card').forEach(card => {
-            card.addEventListener('click', () => {
-                const difficulty = card.getAttribute('data-diff');
-                storage.saveSettings({ difficulty });
+            bindFastClick(card, () => {
+                const diffId = card.getAttribute('data-diff');
+                storage.saveSettings({ difficulty: diffId });
                 closeModal();
             });
         });
@@ -493,22 +512,28 @@ document.addEventListener('DOMContentLoaded', () => {
                 <div class="select-card ${isActive}" data-skin="${s.id}">
                     <div class="select-card-header">
                         <span class="select-card-title">${s.icon} ${s.name}</span>
-                        ${isActive ? '<span style="color: #00ff88; font-size: 0.8rem;">● EQUIPPED</span>' : ''}
+                        ${isActive ? '<span style="color: #00ff88; font-size: 0.8rem;">● SELECTED</span>' : ''}
                     </div>
                     <p class="select-card-desc">${s.desc}</p>
                 </div>
             `;
         });
         html += '</div>';
-        openModal('🐍 SELECT SNAKE SKIN', html);
+        openModal('🐍 CHOOSE SNAKE SKIN', html);
 
         modalBody.querySelectorAll('.select-card').forEach(card => {
-            card.addEventListener('click', () => {
-                const skin = card.getAttribute('data-skin');
-                storage.saveSettings({ skin });
+            bindFastClick(card, () => {
+                const skinId = card.getAttribute('data-skin');
+                storage.saveSettings({ skin: skinId });
+                
+                // Live update background patrolling serpent
+                for (let i = 0; i < snakeSegments.length; i++) {
+                    scene.remove(snakeSegments[i]);
+                }
+                snakeSegments.length = 0;
+                createPatrollingSnake();
+                
                 closeModal();
-                // Reload 3D scene snake to reflect skin
-                location.reload();
             });
         });
     }
@@ -522,8 +547,8 @@ document.addEventListener('DOMContentLoaded', () => {
             html += `
                 <div class="select-card ${isActive}" data-world="${w.id}">
                     <div class="select-card-header">
-                        <span class="select-card-title">🌍 ${w.name}</span>
-                        ${isActive ? '<span style="color: #00ff88; font-size: 0.8rem;">● ACTIVE</span>' : ''}
+                        <span class="select-card-title">${w.name}</span>
+                        ${isActive ? '<span style="color: #00ff88; font-size: 0.8rem;">● SELECTED</span>' : ''}
                     </div>
                     <p class="select-card-desc">${w.desc}</p>
                 </div>
@@ -533,9 +558,9 @@ document.addEventListener('DOMContentLoaded', () => {
         openModal('🌍 SELECT 3D WORLD', html);
 
         modalBody.querySelectorAll('.select-card').forEach(card => {
-            card.addEventListener('click', () => {
-                const world = card.getAttribute('data-world');
-                storage.saveSettings({ world });
+            bindFastClick(card, () => {
+                const worldId = card.getAttribute('data-world');
+                storage.saveSettings({ world: worldId });
                 closeModal();
             });
         });
@@ -543,10 +568,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // 5. ACHIEVEMENTS MODAL
     function openAchievementsModal() {
-        const unlocked = storage.getAchievements();
+        const unlockedMap = storage.getAchievements();
         let html = '<div class="achievements-grid">';
         ACHIEVEMENTS_LIST.forEach(a => {
-            const isUnlocked = !!unlocked[a.id];
+            const isUnlocked = Boolean(unlockedMap[a.id]);
             html += `
                 <div class="achievement-row ${isUnlocked ? 'unlocked' : ''}">
                     <div class="achievement-icon">${a.icon}</div>
@@ -646,38 +671,48 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Bind Hub Buttons
-    document.getElementById('btn-hub-modes')?.addEventListener('click', openModesModal);
-    document.getElementById('btn-hub-diff')?.addEventListener('click', openDifficultyModal);
-    document.getElementById('btn-hub-skins')?.addEventListener('click', openSkinsModal);
-    document.getElementById('btn-hub-worlds')?.addEventListener('click', openWorldsModal);
-    document.getElementById('btn-hub-achievements')?.addEventListener('click', openAchievementsModal);
-    document.getElementById('btn-hub-stats')?.addEventListener('click', openStatsModal);
-    document.getElementById('btn-hub-daily')?.addEventListener('click', openDailyModal);
-    document.getElementById('btn-hub-howto')?.addEventListener('click', openHowToModal);
-    document.getElementById('info-toggle')?.addEventListener('click', openHowToModal);
+    bindFastClick(document.getElementById('btn-hub-modes'), openModesModal);
+    bindFastClick(document.getElementById('btn-hub-diff'), openDifficultyModal);
+    bindFastClick(document.getElementById('btn-hub-skins'), openSkinsModal);
+    bindFastClick(document.getElementById('btn-hub-worlds'), openWorldsModal);
+    bindFastClick(document.getElementById('btn-hub-achievements'), openAchievementsModal);
+    bindFastClick(document.getElementById('btn-hub-stats'), openStatsModal);
+    bindFastClick(document.getElementById('btn-hub-daily'), openDailyModal);
+    bindFastClick(document.getElementById('btn-hub-howto'), openHowToModal);
+    bindFastClick(document.getElementById('info-toggle'), openHowToModal);
 
     // Bind Chips
-    document.getElementById('chip-mode')?.addEventListener('click', openModesModal);
-    document.getElementById('chip-diff')?.addEventListener('click', openDifficultyModal);
-    document.getElementById('chip-skin')?.addEventListener('click', openSkinsModal);
-    document.getElementById('chip-world')?.addEventListener('click', openWorldsModal);
+    bindFastClick(document.getElementById('chip-mode'), openModesModal);
+    bindFastClick(document.getElementById('chip-diff'), openDifficultyModal);
+    bindFastClick(document.getElementById('chip-skin'), openSkinsModal);
+    bindFastClick(document.getElementById('chip-world'), openWorldsModal);
 
     // Start Game Button Animation & Navigation
     const startBtn = document.getElementById('start-game-btn');
     if (startBtn) {
-        startBtn.addEventListener('mouseenter', () => sounds.playHover());
-        startBtn.addEventListener('click', (e) => {
-            e.preventDefault();
+        let isStarting = false;
+        const triggerStart = (e) => {
+            if (isStarting) return;
+            isStarting = true;
+            if (e) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
             sounds.playEat();
             
-            document.body.style.transition = 'transform 0.4s ease-in, opacity 0.4s ease-in';
-            document.body.style.transform = 'scale(1.06)';
+            document.body.style.transition = 'transform 0.35s ease-in, opacity 0.35s ease-in';
+            document.body.style.transform = 'scale(1.05)';
             document.body.style.opacity = '0';
 
             setTimeout(() => {
                 window.location.href = 'game.html';
-            }, 380);
-        });
+            }, 300);
+        };
+
+        bindFastClick(startBtn, triggerStart);
+        if (!isMobile) {
+            startBtn.addEventListener('mouseenter', () => sounds.playHover());
+        }
     }
 
     if (!isMobile) {
@@ -685,4 +720,10 @@ document.addEventListener('DOMContentLoaded', () => {
             elem.addEventListener('mouseenter', () => sounds.playHover(), { passive: true });
         });
     }
-});
+}
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initWelcomeUI);
+} else {
+    initWelcomeUI();
+}

@@ -198,10 +198,15 @@ function initThree() {
 
 function updateCameraFraming(width, height) {
     const aspect = width / height;
-    if (aspect < 0.8) {
-        // Portrait phone: adjust distance and angle so the arena sits comfortably in view above D-Pad
+    if (aspect < 0.6) {
+        // Ultra tall/narrow phone portrait (e.g. 390x844, 412x915, 320x568)
+        camera.fov = 64;
+        camera.position.set(0, 43, 28);
+        camera.lookAt(0, -5, 2);
+    } else if (aspect < 0.8) {
+        // Standard phone portrait
         camera.fov = 58;
-        camera.position.set(0, 40, 28);
+        camera.position.set(0, 39, 28);
         camera.lookAt(0, -4, 2);
     } else if (aspect < 1.2) {
         // Tablet / Square screen
@@ -469,6 +474,16 @@ function createScoreFloatPopup(worldPos) {
 // 3D SNAKE MESH MANAGEMENT
 // ----------------------------------------------------
 function update3DSnake() {
+    const currentSkinKey = (typeof storage !== 'undefined' && storage.getSettings().skin) || 'emerald';
+    const skinData = (typeof SNAKE_SKINS !== 'undefined' && SNAKE_SKINS[currentSkinKey]) || {
+        id: 'emerald',
+        name: 'Emerald Cyber',
+        headColor: 0x00ff88,
+        tailColor: 0xa855f7,
+        eyeColor: 0xff0055,
+        glow: 0x00ff88
+    };
+
     while (snakeMeshes.length < snake.length) {
         const idx = snakeMeshes.length;
         const isHead = idx === 0;
@@ -478,11 +493,11 @@ function update3DSnake() {
             const headGroup = new THREE.Group();
             const headGeo = new THREE.BoxGeometry(CELL_SIZE * 0.88, CELL_SIZE * 0.8, CELL_SIZE * 0.88);
             const headMat = new THREE.MeshStandardMaterial({
-                color: 0x00ff88,
-                emissive: 0x00ff88,
-                emissiveIntensity: 0.65,
-                roughness: 0.2,
-                metalness: 0.8
+                color: skinData.headColor,
+                emissive: skinData.headColor,
+                emissiveIntensity: isMobile ? 0.85 : 0.70,
+                roughness: 0.3,
+                metalness: 0.12
             });
             const headBox = new THREE.Mesh(headGeo, headMat);
             if (!isMobile) headBox.castShadow = true;
@@ -491,7 +506,7 @@ function update3DSnake() {
             // Glowing Eyes
             const eyeSegments = isMobile ? 8 : 16;
             const eyeGeo = new THREE.SphereGeometry(0.16, eyeSegments, eyeSegments);
-            const eyeMat = new THREE.MeshBasicMaterial({ color: 0xff0055 });
+            const eyeMat = new THREE.MeshBasicMaterial({ color: skinData.eyeColor || 0xff0055 });
             
             const leftEye = new THREE.Mesh(eyeGeo, eyeMat);
             leftEye.position.set(0.3, 0.2, 0.4);
@@ -501,27 +516,37 @@ function update3DSnake() {
             rightEye.position.set(-0.3, 0.2, 0.4);
             headGroup.add(rightEye);
 
-            if (!isMobile) {
-                const headLight = new THREE.PointLight(0x00ff88, 2, 8);
-                headLight.position.set(0, 0.5, 0);
-                headGroup.add(headLight);
-            }
+            const headLight = new THREE.PointLight(
+                skinData.glow || skinData.headColor,
+                isMobile ? 2.5 : 2.0,
+                isMobile ? 8 : 10
+            );
+            headLight.position.set(0, 0.5, 0);
+            headGroup.add(headLight);
 
             mesh = headGroup;
         } else {
             const ratio = idx / Math.max(snake.length, 10);
             const segGeo = new THREE.BoxGeometry(CELL_SIZE * 0.8, CELL_SIZE * 0.72, CELL_SIZE * 0.8);
-            const color = new THREE.Color().lerpColors(
-                new THREE.Color(0xa3e635),
-                new THREE.Color(0xa855f7),
-                Math.min(ratio * 1.2, 1)
-            );
+            
+            let segColor;
+            if (skinData.isRainbow) {
+                const hue = ((idx * 0.09) % 1);
+                segColor = new THREE.Color().setHSL(hue, 1.0, 0.55);
+            } else {
+                segColor = new THREE.Color().lerpColors(
+                    new THREE.Color(skinData.headColor),
+                    new THREE.Color(skinData.tailColor),
+                    Math.min(ratio * 1.2, 1)
+                );
+            }
+
             const segMat = new THREE.MeshStandardMaterial({
-                color: color,
-                emissive: color,
-                emissiveIntensity: 0.3 * (1 - ratio * 0.4),
-                roughness: 0.3,
-                metalness: 0.7
+                color: segColor,
+                emissive: segColor,
+                emissiveIntensity: isMobile ? (0.55 * (1 - ratio * 0.35)) : (0.40 * (1 - ratio * 0.35)),
+                roughness: 0.35,
+                metalness: 0.15
             });
             mesh = new THREE.Mesh(segGeo, segMat);
             if (!isMobile) mesh.castShadow = true;
@@ -662,7 +687,7 @@ function resetRound() {
     if (scoreEl) scoreEl.innerText = score;
     if (timeEl) timeEl.innerText = formatTime(seconds);
     if (speedEl) speedEl.innerText = '1.0x';
-    if (lengthEl) lengthEl.innerText = snake.length;
+    updateLengthHUD();
 
     generateFood();
     update3DSnake();
@@ -768,11 +793,19 @@ function moveSnake() {
     }
 
     update3DSnake();
-    if (lengthEl) lengthEl.innerText = snake.length;
+    updateLengthHUD();
+}
+
+function updateLengthHUD() {
+    if (!lengthEl) lengthEl = document.getElementById('length-val');
+    if (lengthEl) {
+        lengthEl.innerText = snake.length;
+    }
 }
 
 function updateScore() {
     if (scoreEl) scoreEl.innerText = score;
+    updateLengthHUD();
 
     if (score > highScore) {
         highScore = score;
@@ -870,8 +903,14 @@ function gameOver(reason) {
     if (gameOverReasonEl) gameOverReasonEl.innerText = reason;
     if (finalScoreEl) finalScoreEl.innerText = score;
     if (bestScoreEl) bestScoreEl.innerText = highScore;
+
+    if (!finalLengthEl) finalLengthEl = document.getElementById('stat-final-length');
     if (finalLengthEl) finalLengthEl.innerText = snake.length;
+
+    if (!finalTimeEl) finalTimeEl = document.getElementById('stat-final-time');
     if (finalTimeEl) finalTimeEl.innerText = formatTime(seconds);
+
+    updateLengthHUD();
 
     if (newRecordBadge) {
         if (isNewHighScore && score > 0) newRecordBadge.style.display = 'inline-block';
@@ -895,7 +934,7 @@ function startGame() {
 // ----------------------------------------------------
 // UI INITIALIZATION & FAST-TOUCH LISTENERS
 // ----------------------------------------------------
-document.addEventListener('DOMContentLoaded', () => {
+function initGameUI() {
     // DOM Element hooks
     scoreEl = document.getElementById('score-val');
     highScoreEl = document.getElementById('highscore-val');
@@ -941,28 +980,32 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     updateSoundUI();
 
-    if (soundToggleBtn) {
-        const handleSoundToggle = (e) => {
-            e.preventDefault();
-            sounds.toggleMute();
-            updateSoundUI();
-            sounds.playClick();
-        };
-        soundToggleBtn.addEventListener('click', handleSoundToggle);
-    }
-
-    // Button Listeners with instant touchstart
+    // Button Listeners with instant touchstart & double-trigger prevention
     function bindFastClick(element, handler) {
         if (!element) return;
-        element.addEventListener('click', (e) => {
-            e.preventDefault();
-            handler(e);
-        });
+        let lastTouchTime = 0;
         element.addEventListener('touchstart', (e) => {
             e.preventDefault();
             e.stopPropagation();
+            lastTouchTime = Date.now();
             handler(e);
         }, { passive: false });
+        element.addEventListener('click', (e) => {
+            if (Date.now() - lastTouchTime < 450) {
+                e.preventDefault();
+                return;
+            }
+            e.preventDefault();
+            handler(e);
+        });
+    }
+
+    if (soundToggleBtn) {
+        bindFastClick(soundToggleBtn, () => {
+            sounds.toggleMute();
+            updateSoundUI();
+            sounds.playClick();
+        });
     }
 
     bindFastClick(restartBtn, () => { sounds.playClick(); startGame(); });
@@ -972,10 +1015,17 @@ document.addEventListener('DOMContentLoaded', () => {
     const btnResume = document.getElementById('btn-resume');
     bindFastClick(btnResume, togglePause);
 
-    // Fast-response Mobile D-Pad Touch Handlers
+    // Fast-response Mobile D-Pad Touch Handlers with ghost-click prevention
     function bindDpad(btn, dir) {
         if (!btn) return;
+        let lastTouchTime = 0;
         const trigger = (e) => {
+            if (e.type === 'mousedown' && Date.now() - lastTouchTime < 450) {
+                return;
+            }
+            if (e.type === 'touchstart') {
+                lastTouchTime = Date.now();
+            }
             e.preventDefault();
             e.stopPropagation();
             if (isPlaying && !isPaused) {
@@ -1025,4 +1075,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Start Game immediately on load
     startGame();
-});
+}
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initGameUI);
+} else {
+    initGameUI();
+}
